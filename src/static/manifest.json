@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Date Formatter",
+  "description": "This chrome extension scraps product details from well-known eCommerce platforms",
+  "version": "1.0.0",
+  "action": {
+    "default_icon": "icon.png"
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "permissions": [
+    "alarms",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "background.bundle.js"
+  },
+  "host_permissions": [
+   "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.bundle.js"],
+      "css": ["index.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
