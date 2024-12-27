@@ -1,3 +1,6 @@
+import { injectReactApp, processEachNode } from "../helpers/injectElement";
+
+
 console.log('content script loaded and searching for dates');
 // /\b(?:\d{1,2}[-/thstndrd\s]?\d{1,2}[-/thstndrd\s]?\d{4}|\d{1,2}[-/thstndrd\s]?\d{4})\b/g, // MM/DD/YYYY, DD/MM/YYYY, etc.
 // /\b(?:\d{4}[-/thstndrd\s]?\d{1,2}[-/thstndrd\s]?\d{1,2})\b/g, // YYYY-MM-DD
@@ -14,16 +17,62 @@ const datePatterns = [
 ];
 
 /**
- * Filter out nodes that don't have a parent from the given nodes.
- * This is because we can't add a span to a node that doesn't have a parent.
- * @param nodes The nodes to filter.
- * @returns A promise that resolves to an array of nodes that have a parent.
+ * This function loops through all nodes in the body of the page, checks for dates in the innerHTML of the node using a list of regex patterns, and if a match is found, it adds the node to an array and highlights the date by wrapping it in a span tag with a class of "highlighted-date".
+ * The function returns a Promise that resolves with the array of nodes that had dates in their innerHTML.
+ * @returns {Promise<HTMLElement[]>} a Promise that resolves with an array of nodes that had dates in their innerHTML.
  */
-function filterNodes(nodes: NodeListOf<Element>): Promise<Element[]> {
+
+export interface NodeWithDate {
+    node: HTMLElement;
+    pattern: RegExp;
+}
+
+
+const getNodesWithDates = async (): Promise<NodeWithDate[]> => {
     return new Promise((resolve, reject) => {
-        const filteredNodes = Array.from(nodes).filter(node => node.parentNode)
-        resolve(filteredNodes)
-    })
+        try {
+            // get all nodes from the body
+            const allNodes: NodeListOf<Element> = document.querySelectorAll('body *:not(script)');
+
+            const nodeWithDates: NodeWithDate[] = [];
+
+            // loop through each node and check for dates in the innerHTML of the node and highlight them if found 
+
+            for (let index = 0; index < datePatterns.length; index++) {
+                const pattern = datePatterns[index];
+
+                for (let node of allNodes) {
+                    if (node instanceof HTMLElement) {
+
+                        const htmlTagRegex = /<([a-z][\s\S]*?)>/i;
+
+                        if (htmlTagRegex.test(node.innerHTML)) continue;
+
+                        const numbers = node.innerHTML.match(pattern);
+
+                        if (numbers) {
+                            // console.log(node, "node");
+
+                            // console.log(numbers, "numbers");
+                            // console.log(node.parentElement, "node.parentElement");
+
+                            if (node.parentElement) {
+                                nodeWithDates.push({node, pattern});
+                                // node.parentElement.innerHTML = node.parentElement.innerHTML.replace(numbers[0], ` <span class="date-highlighter" ><mark class="highlighted-date" >${numbers[0]}</mark></span>`);
+                                // node.style.backgroundColor = "yellow";
+                            }
+                        }
+                    }
+                }
+
+            }
+            return resolve(nodeWithDates);
+        } catch (error) {
+            console.error(error);
+            return reject(error);
+
+        }
+    });
 }
 
 /**
@@ -34,44 +83,15 @@ function filterNodes(nodes: NodeListOf<Element>): Promise<Element[]> {
  */
 async function main() {
 
-    // get all nodes from the body
-    const allNodes: NodeListOf<Element> = document.querySelectorAll('body *:not(script)');
+    // get nodes with dates from the page
+    const nodesWithDates: NodeWithDate[] = await getNodesWithDates();
 
-    console.log(allNodes, "allNodes");
+    console.log(nodesWithDates, "nodesWithDates");
+
+    // inject react app into the page and highlight the dates
+    await processEachNode(nodesWithDates);
     
 
-    // filter out nodes that don't have a parent
-    const filteredNodes = await filterNodes(allNodes)
-
-
-    // loop through each node and check for dates in the innerHTML of the node and highlight them if found 
-
-    for (let index = 0; index < datePatterns.length; index++) {
-        const pattern = datePatterns[index];
-        
-        for (let node of filteredNodes) {
-            if (node instanceof HTMLElement) {
-    
-                const htmlTagRegex = /<([a-z][\s\S]*?)>/i;
-    
-                if(htmlTagRegex.test(node.innerHTML)) continue;
-            
-                const numbers = node.innerHTML.match(pattern);
-    
-                if (numbers) {
-                    console.log(node, "node");
-    
-                    console.log(numbers, "numbers");
-                    console.log(node.parentElement, "node.parentElement");
-    
-                    if (node.parentElement) {
-                        node.parentElement.innerHTML = node.parentElement.innerHTML.replace(numbers[0], `<mark class="highlighted-date" >${numbers[0]}</mark>`);
-                    }
-                }
-            }
-        }
-        
-    }
 
 }
 
