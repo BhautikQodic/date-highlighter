@@ -24,9 +24,21 @@ const datePatterns = [
 
 export interface NodeWithDate {
     node: HTMLElement;
+    // nodeName: string;
     pattern: RegExp;
 }
 
+
+/**
+ * Asynchronously retrieves all nodes in the document body that contain dates in their innerHTML.
+ * Utilizes a list of regular expression patterns to identify date formats.
+ * Filters out nodes with HTML tags in their innerHTML.
+ * For each matching node, it checks if it has a parent element and adds it to an array along with
+ * the corresponding date pattern.
+ * Returns a Promise that resolves with an array of @NodeWithDate objects, each containing a node
+ * and the matched pattern.
+ * @returns {Promise<NodeWithDate[]>} A promise that resolves with an array of nodes containing dates.
+ */
 
 const getNodesWithDates = async (): Promise<NodeWithDate[]> => {
     return new Promise((resolve, reject) => {
@@ -37,7 +49,6 @@ const getNodesWithDates = async (): Promise<NodeWithDate[]> => {
             const nodeWithDates: NodeWithDate[] = [];
 
             // loop through each node and check for dates in the innerHTML of the node and highlight them if found 
-
             for (let index = 0; index < datePatterns.length; index++) {
                 const pattern = datePatterns[index];
 
@@ -51,15 +62,9 @@ const getNodesWithDates = async (): Promise<NodeWithDate[]> => {
                         const numbers = node.innerHTML.match(pattern);
 
                         if (numbers) {
-                            // console.log(node, "node");
-
-                            // console.log(numbers, "numbers");
-                            // console.log(node.parentElement, "node.parentElement");
 
                             if (node.parentElement) {
                                 nodeWithDates.push({node, pattern});
-                                // node.parentElement.innerHTML = node.parentElement.innerHTML.replace(numbers[0], ` <span class="date-highlighter" ><mark class="highlighted-date" >${numbers[0]}</mark></span>`);
-                                // node.style.backgroundColor = "yellow";
                             }
                         }
                     }
@@ -86,17 +91,9 @@ async function main() {
     // get nodes with dates from the page
     const nodesWithDates: NodeWithDate[] = await getNodesWithDates();
 
-    console.log(nodesWithDates, "nodesWithDates");
 
     // inject react app into the page and highlight the dates
     await processEachNode(nodesWithDates);
-    
-
-
 }
-
-// const observer = new MutationObserver(main);
-// observer.observe(document.body, { childList: true, subtree: true });
-
 
 main();

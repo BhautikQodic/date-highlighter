@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tooltip-style Popups</title>
+    <style>
+      .button {
+        padding: 10px 20px;
+        margin: 50px; /* Increased margin to show tooltip better */
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        position: relative; /* For positioning tooltip */
+      }
+
+      .button:hover {
+        background-color: #45a049;
+      }
+
+      .popup {
+        display: none;
+        position: absolute;
+        background-color: #333;
+        color: white;
+        padding: 15px;
+        border-radius: 6px;
+        font-size: 14px;
+        z-index: 1;
+        width: 200px;
+        /* Position above the button by default */
+        bottom: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Arrow for tooltip */
+      .popup::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -10px;
+        border-width: 10px;
+        border-style: solid;
+        border-color: #333 transparent transparent transparent;
+      }
+
+      .popup-content {
+        text-align: center;
+      }
+
+      .close {
+        color: #fff;
+        float: right;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin: -10px -5px 0 0;
+      }
+
+      .close:hover {
+        color: #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <button
+      class="button"
+      onmouseenter="openPopup('popup1')"
+      onmouseleave="closePopup('popup1')"
+    >
+      Hover for Tooltip 1
+      <div id="popup1" class="popup">
+        <span class="close" onclick="closePopup('popup1')">&times;</span>
+        <div class="popup-content">
+          <h3>Tooltip 1</h3>
+          <p>This is helpful information for tooltip 1!</p>
+        </div>
+      </div>
+    </button>
+
+    <button
+      class="button"
+      onmouseenter="openPopup('popup2')"
+      onmouseleave="closePopup('popup2')"
+    >
+      Hover for Tooltip 2
+      <div id="popup2" class="popup">
+        <span class="close" onclick="closePopup('popup2')">&times;</span>
+        <div class="popup-content">
+          <h3>Tooltip 2</h3>
+          <p>This is helpful information for tooltip 2!</p>
+        </div>
+      </div>
+    </button>
+
+    <script>
+      function openPopup(popupId) {
+        document.getElementById(popupId).style.display = 'block';
+      }
+
+      function closePopup(popupId) {
+        document.getElementById(popupId).style.display = 'none';
+      }
+    </script>
+  </body>
+</html>
